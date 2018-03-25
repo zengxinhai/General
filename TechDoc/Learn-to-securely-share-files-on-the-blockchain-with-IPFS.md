@@ -1,5 +1,5 @@
 原文链接：[Learn to securely share files on the blockchain with IPFS!](https://medium.com/@mycoralhealth/learn-to-securely-share-files-on-the-blockchain-with-ipfs-219ee47df54c)
-![IMG_1150.PNG](https://upload-images.jianshu.io/upload_images/11213662-dc0f9c7830903e65.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![IPFS with blockchain](https://upload-images.jianshu.io/upload_images/11213662-dc0f9c7830903e65.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 **在开始阅读，建议你先阅读我们之前发的一篇文章:
 [“Code your own blockchain in less than 200 lines of Go!”](https://medium.com/@mycoralhealth/code-your-own-blockchain-in-less-than-200-lines-of-go-e296282bcffc)**
@@ -17,7 +17,7 @@ IPFS全称为Interplanet File System，中文可以叫做星际文件系统，�
 
 下图简单的表述了IPFS的工作流程:
 
-![IPFS上传流程](https://upload-images.jianshu.io/upload_images/11213662-e2105e8441314db0.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+ ![IPFS上传流程](https://upload-images.jianshu.io/upload_images/11213662-e2105e8441314db0.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 1. John打算上传一份PDF文档到IPFS
 
@@ -65,7 +65,8 @@ IPFS全称为Interplanet File System，中文可以叫做星际文件系统，�
 
 在实际应用中，每个区块里存储的可能是健康数据或者实验室数据的hash值。当我们得到一个新的实验结果，我们可以将加密后的实验结果上传到IPFS，在新建的区块内存储相应的hash值即可。
 
-##说了这么多，看看具体怎么做吧！
+## 说了这么多，看看具体怎么做吧！
+
 本教程包含的内容：
 - 配置GPG
 
@@ -77,14 +78,16 @@ IPFS全称为Interplanet File System，中文可以叫做星际文件系统，�
 
 - 从IPFS下载加密文件，然后确认只有私钥拥有者才能解密内容
 
-####需要做的准备
+#### 需要做的准备
+
 - 一台备用电脑或者虚拟机也行。这台备用电脑就是你的文件接收方。
 
 - 一个测试文件。这个可以自己随意定，PDF文档，txt文件都行。
 
 好了，下面开始！
 
-###配置GPG
+### 配置GPG
+
 在两台电脑上都安装GPG，[下载链接](http://gnupg.org/download)。如果是Mac的话，直接用```brew install gnupg```命令安装。
 
 用下面的命令，在两台电脑上分别生成key:
@@ -93,58 +96,80 @@ IPFS全称为Interplanet File System，中文可以叫做星际文件系统，�
 
 在第二台电脑上导出公钥：
 ```gpg --export --armor email > pubkey.asc```
+
 把上面命令中的email替换成你配置GPG时填入的```email```地址，运行即可。拷贝```pubkey.asc```文件到你的第一台电脑上。最好用U盘，而不要用电子邮件这样的常规网络传输方式。
 
 拷贝成功后，在你第一台电脑上运行:
 ```gpg --import pubkey.asc```
+
 这样就导入了第二台电脑的公钥。可以用下面的命令检查是否导入成功:
 ```gpg --list-keys```
+
 在命令输出结果中，你应该能看到第二台电脑的```name``` 和 ```email```。
+
 都做好之后，GPG的配置就完成了，继续看看IPFS。
 
-###搭建IPFS
+### 搭建IPFS
+
 根据[IPFS官方教程](https://ipfs.io/docs/install)，在两台电脑上都下载安装。
+
 安装成功之后，执行：```ipfs init```
 
 初始化结束之后，再运行: ```ipfs daemon```，启动ipfs进程。
+
 都成功之后，IPFS搭建就结束了。
 
-###用公钥加密文件
+### 用公钥加密文件
+
 这里我的测试文件是一个名为 myriad.pdf 的文档，我们用第二台电脑的公钥对其进行加密：
+
 ```gpg --encrypt --recipient "Cory Health" myriad.pdf```
+
 *需要注意的是，文件名需要根据你实际的测试文件名做更改，“Cory Health”替换为你第二台电脑公钥的名称。*
 
 加密成功之后，同目录下生成一个名为后缀```.gpg```的文件，只有在你第二台电脑上才能解密并查看这个文件，你可以尝试将它发送给你的朋友，测试是否能打开，就算他们把文件名改回```myriad.pdf```，也无法查看pdf的内容。
 
 现在有了这个加密的文件，我们可以把它上传到IPFS！
 
-###上传加密文件至IPFS
+### 上传加密文件至IPFS
+
 在我们第一台电脑上运行：
+
 ```ipfs add myriad.pdf.gpg```
+
 命令成功之后，会返回一个 Qm开头的hash值，你可以将这个hash值分享给你的朋友，或是任何人，他们就能通过IPFS下载到对应的文件。
 
 为了确保我们上传成功了，我们可以运行:
+
 ```ipfs pin ls```
+
 返回结果里面，应该包含刚才的hash值。
 
-###从IPFS下载加密文件
+### 从IPFS下载加密文件
+
 记住，我们现在是用第二台电脑代表一个接收方，你甚至可以叫你的朋友操作第二台电脑！
 在第二台电脑上运行:
+
 ```ipfs get hashValue```
+
 把hashValue替换成上一步得到的以Qm开头的hash值，运行并等待下载。
 
 运行结束之后，加密文件就被下载到了你第二台电脑上了。
 
-###解密文件
+### 解密文件
+
 在第二台电脑运行:
+
 ```gpg --decrypt encryptFile > myriad.pdf```
+
 这个```myriad.pdf```就是解密后的文件，可以直接查看其内容，验证是否解密成功。
 
 哇喔！到这里我已经成功通过IPFS下载，并解密了我们的文件。用这个方式，我们就可以防止其他人查看我们放在IPFS上的文件内容了！
 
-##总结与展望
+## 总结与展望
 
 现在可以放松庆祝一下了！我们刚才掌握了一个十分强大的方法，它能够解决目前区块链技术的一些关键问题。
+
 回顾一下我们都学到些什么：
 
 - 认识到区块链在数据和文件存储方面的短板
